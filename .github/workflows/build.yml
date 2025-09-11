@@ -79,17 +79,66 @@ jobs:
           distribution: temurin
       - run: chmod +x gradlew
       - run: ./gradlew build shadowJar
-      - name: Get version from tag
+
+      # Version extraction for both tags and master branch
+      - name: Get version
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      - name: Create Release
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Extract version from tag
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=true" >> $GITHUB_OUTPUT
+          else
+            # Use gradle version for master branch
+            VERSION=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
+            echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=false" >> $GITHUB_OUTPUT
+          fi
+          echo "Detected version: ${VERSION}"
+
+      # Create release for tags
+      - name: Create Release (Tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.get_version.outputs.VERSION }}
           name: Book API v${{ steps.get_version.outputs.VERSION }}
-          body: "## Book API v${{ steps.get_version.outputs.VERSION }}\nSee commit history for changes."
+          body: |
+            ## Book API v${{ steps.get_version.outputs.VERSION }}
+            
+            ### Changes
+            See commit history for detailed changes.
+            
+            ### Downloads
+            - `book-api-${{ steps.get_version.outputs.VERSION }}.jar` - Standard JAR (requires dependencies)
+            - `book-api-${{ steps.get_version.outputs.VERSION }}-all.jar` - Fat JAR (includes all dependencies)
+            - `book-api-${{ steps.get_version.outputs.VERSION }}-sources.jar` - Source code
+            - `book-api-${{ steps.get_version.outputs.VERSION }}-javadoc.jar` - API documentation
           files: build/libs/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Create pre-release for master branch pushes
+      - name: Create Pre-Release (Master)
+        if: github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}-dev-${{ github.sha }}
+          name: Book API v${{ steps.get_version.outputs.VERSION }} (Development Build)
+          body: |
+            ## Book API v${{ steps.get_version.outputs.VERSION }} - Development Build
+            
+            **⚠️ This is a development build from the master branch**
+            
+            ### Commit
+            - SHA: ${{ github.sha }}
+            - Message: ${{ github.event.head_commit.message }}
+            
+            ### Downloads
+            - `book-api-${{ steps.get_version.outputs.VERSION }}-all.jar` - Fat JAR (includes all dependencies)
+          files: build/libs/*-all.jar
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

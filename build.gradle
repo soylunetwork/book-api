@@ -55,7 +55,7 @@ jar {
 
 shadowJar {
     archiveBaseName = 'book-api'
-    archiveClassifier = ''
+    archiveClassifier = 'all'
     relocate 'com.google.gson', 'network.soylu.book_api.libs.gson'
 }
 
@@ -63,7 +63,6 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            artifact shadowJar
 
             pom {
                 name = 'Book API'
@@ -91,6 +90,11 @@ publishing {
                     url = 'https://github.com/soylunetwork/book-api'
                 }
             }
+        }
+
+        shadow(MavenPublication) { publication ->
+            publication.artifactId = 'book-api-all'
+            project.shadow.component(publication)
         }
     }
 
