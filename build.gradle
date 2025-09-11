@@ -94,7 +94,9 @@ publishing {
 
         shadow(MavenPublication) { publication ->
             publication.artifactId = 'book-api-all'
-            project.shadow.component(publication)
+            artifact shadowJar
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 
