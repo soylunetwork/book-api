@@ -2,7 +2,7 @@
 
 Minecraft 1.21.4 ve üstü sürümler için geliştirilmiş, NMS yansıtma (reflection) kullanarak oyunculara kitap oluşturma, düzenleme ve görüntüleme işlemlerini kolaylaştıran kapsamlı bir kütüphane.
 
-[![Yapılandırma Durumu](https://github.com/soylunetwork/book-api/workflows/Yap%C4%B1land%C4%B1rma%20ve%20Yay%C4%B1n/badge.svg)](https://github.com/soylunetwork/book-api/actions)
+[![Yapılandırma Durumu](https://github.com/soylunetwork/book-api/actions/workflows/build.yml/badge.svg)](https://github.com/soylunetwork/book-api/actions/workflows/build.yml)
 [![Lisans: MIT](https://img.shields.io/badge/Lisans-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java Sürümü](https://img.shields.io/badge/Java-21+-blue.svg)](https://openjdk.java.net/)
 [![Minecraft Sürümü](https://img.shields.io/badge/Minecraft-1.21.4+-green.svg)](https://www.minecraft.net/)
