@@ -19,83 +19,78 @@ repositories {
     mavenCentral()
     maven {
         name = "spigotmc-repo"
-        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+        url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     }
     maven {
         name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
+        url = uri("https://oss.sonatype.org/content/groups/public/")
     }
     maven {
         name = "papermc"
-        url = "https://repo.papermc.io/repository/maven-public/"
+        url = uri("https://repo.papermc.io/repository/maven-public/")
     }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    implementation "com.google.code.gson:gson:2.10.1"
-    compileOnly "org.jetbrains:annotations:24.1.0"
-    testImplementation platform("org.junit:junit-bom:5.10.0")
-    testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "org.mockito:mockito-core:5.8.0"
+    implementation("com.google.code.gson:gson:2.10.1")
+    compileOnly("org.jetbrains:annotations:24.1.0")
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:5.8.0")
 }
 
-tasks.withType(JavaCompile).configureEach {
+tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
-    options.compilerArgs += ["-parameters"]
+    options.compilerArgs.add("-parameters")
 }
 
-test {
+tasks.test {
     useJUnitPlatform()
 }
 
-jar {
-    archiveBaseName = "book-api"
+tasks.jar {
+    archiveBaseName.set("book-api")
 }
 
-shadowJar {
-    archiveBaseName = "book-api"
-    archiveClassifier = ""
-    relocate "com.google.gson", "network.soylu.book_api.libs.gson"
+tasks.shadowJar {
+    archiveBaseName.set("book-api")
+    archiveClassifier.set("")
+    relocate("com.google.gson", "network.soylu.book_api.libs.gson")
 }
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            from components.java
-
-            // Shadow jar'ı ana artifact olarak kullan
-            artifact shadowJar
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifact(tasks.shadowJar.get())
 
             pom {
-                name = "Book API"
-                description = "A comprehensive Book API library for Minecraft"
-                url = "https://github.com/soylunetwork/book-api"
+                name.set("Book API")
+                description.set("A comprehensive Book API library for Minecraft")
+                url.set("https://github.com/soylunetwork/book-api")
 
                 licenses {
                     license {
-                        name = "MIT License"
-                        url = "https://opensource.org/licenses/MIT"
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
                     }
                 }
-
                 developers {
                     developer {
-                        id = "soylu"
-                        name = "Soylu"
-                        email = "your.email@example.com"
+                        id.set("soylu")
+                        name.set("Soylu")
+                        email.set("your.email@example.com")
                     }
                 }
-
                 scm {
-                    connection = "scm:git:git://github.com/soylunetwork/book-api.git"
-                    developerConnection = "scm:git:ssh://github.com:soylunetwork/book-api.git"
-                    url = "https://github.com/soylunetwork/book-api"
+                    connection.set("scm:git:git://github.com/soylunetwork/book-api.git")
+                    developerConnection.set("scm:git:ssh://github.com:soylunetwork/book-api.git")
+                    url.set("https://github.com/soylunetwork/book-api")
                 }
             }
         }
     }
-
     repositories {
         maven {
             name = "GitHubPackages"
@@ -108,6 +103,6 @@ publishing {
     }
 }
 
-wrapper {
-    gradleVersion = "8.5"
+tasks.wrapper {
+    gradleVersion = "9.0.0"
 }
