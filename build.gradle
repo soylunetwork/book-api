@@ -1,0 +1,106 @@
+plugins {
+    id("java-library")
+    id("maven-publish")
+    id("com.gradleup.shadow") version "9.0.2"
+}
+
+group = "network.soylu.book_api"
+version = "1.0.0"
+description = "A Book API library for Minecraft 1.21.4+"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "spigotmc-repo"
+        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+    maven {
+        name = "papermc"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+}
+
+dependencies {
+    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+
+    implementation "com.google.code.gson:gson:2.10.1"
+    compileOnly "org.jetbrains:annotations:24.1.0"
+
+    testImplementation platform("org.junit:junit-bom:5.10.0")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.mockito:mockito-core:5.8.0"
+    testImplementation "org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-parameters"]
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    archiveClassifier = ""
+    relocate "com.google.gson", "network.soylu.book_api.libs.gson"
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            pom {
+                name = "Book API"
+                description = "A comprehensive Book API library for Minecraft"
+                url = "https://github.com/soylunetwork/book-api"
+
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://opensource.org/licenses/MIT"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = "soylu"
+                        name = "Soylu"
+                        email = "your.email@example.com"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:git://github.com/soylunetwork/book-api.git"
+                    developerConnection = "scm:git:ssh://github.com:soylunetwork/book-api.git"
+                    url = "https://github.com/soylunetwork/book-api"
+                }
+            }
+        }
+    }
+}
+
+jar {
+    archiveBaseName = "book-api"
+}
+
+shadowJar {
+    archiveBaseName = "book-api"
+}
+
+wrapper {
+    gradleVersion = "8.5"
+}
