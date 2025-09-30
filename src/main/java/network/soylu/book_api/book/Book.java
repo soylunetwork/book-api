@@ -1,5 +1,8 @@
 package network.soylu.book_api.book;
 
+import network.soylu.book_api.BookAPI;
+import network.soylu.book_api.BookApiException;
+import network.soylu.book_api.book.BookBuilder;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -12,11 +15,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Represents a book with title, author, and pages.
- * This class is immutable after creation.
+ * Represents an immutable book with title, author, and pages for use in Minecraft.
  *
- * @author Soylu
- * @version 1.0.0
+ * @author sheduxdev
  * @since 1.0.0
  */
 public final class Book {
@@ -29,10 +30,11 @@ public final class Book {
     /**
      * Creates a new Book instance.
      *
-     * @param title The book title (can be null)
-     * @param author The book author (can be null)
-     * @param pages The book pages (cannot be null)
-     * @param signed Whether the book is signed
+     * @param title the book title, can be null
+     * @param author the book author, can be null
+     * @param pages the book pages, cannot be null
+     * @param signed whether the book is signed
+     * @throws NullPointerException if pages is null
      */
     public Book(@Nullable String title, @Nullable String author, @NotNull List<String> pages, boolean signed) {
         this.title = title;
@@ -44,7 +46,7 @@ public final class Book {
     /**
      * Gets the book title.
      *
-     * @return The book title, or null if not set
+     * @return the book title, or null if not set
      */
     @Nullable
     public String getTitle() {
@@ -54,7 +56,7 @@ public final class Book {
     /**
      * Gets the book author.
      *
-     * @return The book author, or null if not set
+     * @return the book author, or null if not set
      */
     @Nullable
     public String getAuthor() {
@@ -64,7 +66,7 @@ public final class Book {
     /**
      * Gets an immutable copy of the book pages.
      *
-     * @return The book pages
+     * @return an unmodifiable list of pages
      */
     @NotNull
     public List<String> getPages() {
@@ -72,10 +74,10 @@ public final class Book {
     }
 
     /**
-     * Gets a specific page by index.
+     * Gets the content of a specific page by index.
      *
-     * @param index The page index (0-based)
-     * @return The page content
+     * @param index the 0-based page index
+     * @return the page content
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     @NotNull
@@ -86,7 +88,7 @@ public final class Book {
     /**
      * Gets the number of pages in the book.
      *
-     * @return The page count
+     * @return the page count
      */
     public int getPageCount() {
         return pages.size();
@@ -104,7 +106,7 @@ public final class Book {
     /**
      * Checks if the book has a title.
      *
-     * @return true if the book has a title, false otherwise
+     * @return true if the book has a non-empty title, false otherwise
      */
     public boolean hasTitle() {
         return title != null && !title.isEmpty();
@@ -113,7 +115,7 @@ public final class Book {
     /**
      * Checks if the book has an author.
      *
-     * @return true if the book has an author, false otherwise
+     * @return true if the book has a non-empty author, false otherwise
      */
     public boolean hasAuthor() {
         return author != null && !author.isEmpty();
@@ -122,16 +124,16 @@ public final class Book {
     /**
      * Checks if the book has pages.
      *
-     * @return true if the book has pages, false otherwise
+     * @return true if the book has at least one page, false otherwise
      */
     public boolean hasPages() {
         return !pages.isEmpty();
     }
 
     /**
-     * Converts this book to an ItemStack.
+     * Converts this book to a Minecraft ItemStack.
      *
-     * @return The ItemStack representation of this book
+     * @return the ItemStack representation of the book
      */
     @NotNull
     public ItemStack toItemStack() {
@@ -159,9 +161,9 @@ public final class Book {
     }
 
     /**
-     * Creates a builder from this book.
+     * Creates a BookBuilder initialized with this book's properties.
      *
-     * @return A new BookBuilder with this book's properties
+     * @return a new BookBuilder instance
      */
     @NotNull
     public BookBuilder toBuilder() {
@@ -177,6 +179,12 @@ public final class Book {
         return builder;
     }
 
+    /**
+     * Checks if this book is equal to another object.
+     *
+     * @param o the object to compare with
+     * @return true if the objects are equal, false otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -189,11 +197,21 @@ public final class Book {
                 Objects.equals(pages, book.pages);
     }
 
+    /**
+     * Computes the hash code for this book.
+     *
+     * @return the hash code
+     */
     @Override
     public int hashCode() {
         return Objects.hash(title, author, pages, signed);
     }
 
+    /**
+     * Returns a string representation of this book.
+     *
+     * @return the string representation
+     */
     @Override
     public String toString() {
         return "Book{" +
@@ -202,5 +220,50 @@ public final class Book {
                 ", pages=" + pages.size() +
                 ", signed=" + signed +
                 '}';
+    }
+
+    /**
+     * Creates a Book instance from a Minecraft ItemStack.
+     *
+     * @param itemStack the ItemStack to convert
+     * @return the Book instance
+     * @throws BookApiException if the ItemStack is not a book
+     */
+    @NotNull
+    public static Book fromItemStack(@NotNull ItemStack itemStack) {
+        if (!isBook(itemStack)) {
+            throw new BookApiException("ItemStack is not a book!");
+        }
+
+        BookMeta meta = (BookMeta) itemStack.getItemMeta();
+        BookBuilder builder = BookAPI.builder();
+
+        if (meta != null) {
+            if (meta.hasTitle()) {
+                builder.title(meta.getTitle());
+            }
+
+            if (meta.hasAuthor()) {
+                builder.author(meta.getAuthor());
+            }
+
+            if (meta.hasPages()) {
+                for (String page : meta.getPages()) {
+                    builder.addPage(page);
+                }
+            }
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * Checks if an ItemStack is a book (writable or written).
+     *
+     * @param itemStack the ItemStack to check
+     * @return true if the ItemStack is a book, false otherwise
+     */
+    public static boolean isBook(@NotNull ItemStack itemStack) {
+        return itemStack.getItemMeta() instanceof BookMeta;
     }
 }

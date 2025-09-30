@@ -5,54 +5,89 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class for handling book-related text processing and validation.
+ *
+ * @author sheduxdev
+ * @since 1.0.0
+ */
 @SuppressWarnings("unused")
 public final class BookUtils {
 
+    /** Maximum number of pages allowed in a book. */
     public static final int MAX_PAGES = 100;
 
+    /** Maximum number of characters allowed per page. */
     public static final int MAX_CHARACTERS_PER_PAGE = 1024;
 
+    /** Maximum number of lines allowed per page. */
     public static final int MAX_LINES_PER_PAGE = 14;
 
+    /** Maximum length of a line in characters. */
     public static final int MAX_LINE_LENGTH = 19;
 
+    /** Maximum length of a book title. */
     public static final int MAX_TITLE_LENGTH = 32;
 
+    /** Maximum length of a book author name. */
     public static final int MAX_AUTHOR_LENGTH = 16;
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private BookUtils() {
     }
 
+    /**
+     * Validates and truncates a page's content to the maximum allowed characters.
+     *
+     * @param page the page content to validate
+     * @return the validated and possibly truncated page content
+     */
     @NotNull
     public static String validateAndTruncatePage(@NotNull String page) {
-
         if (page.length() > MAX_CHARACTERS_PER_PAGE) {
             return page.substring(0, MAX_CHARACTERS_PER_PAGE);
         }
-
         return page;
     }
 
+    /**
+     * Validates and truncates a book title to the maximum allowed length.
+     *
+     * @param title the title to validate
+     * @return the validated and possibly truncated title
+     */
     @NotNull
     public static String validateAndTruncateTitle(@NotNull String title) {
-
         if (title.length() > MAX_TITLE_LENGTH) {
             return title.substring(0, MAX_TITLE_LENGTH);
         }
-
         return title;
     }
 
+    /**
+     * Validates and truncates a book author name to the maximum allowed length.
+     *
+     * @param author the author name to validate
+     * @return the validated and possibly truncated author name
+     */
     @NotNull
     public static String validateAndTruncateAuthor(@NotNull String author) {
-
         if (author.length() > MAX_AUTHOR_LENGTH) {
             return author.substring(0, MAX_AUTHOR_LENGTH);
         }
-
         return author;
     }
 
+    /**
+     * Wraps text to fit within specified line length and maximum lines.
+     *
+     * @param text the text to wrap
+     * @param lineLength the maximum length of a line
+     * @param maxLines the maximum number of lines
+     * @return the wrapped text
+     */
     @NotNull
     public static String wrapText(@NotNull String text, int lineLength, int maxLines) {
         if (text.isEmpty()) {
@@ -104,10 +139,15 @@ public final class BookUtils {
         return String.join("\n", lines);
     }
 
+    /**
+     * Splits text into multiple pages based on character and line limits.
+     *
+     * @param text the text to split
+     * @return a list of pages
+     */
     @NotNull
     public static List<String> splitTextIntoPages(@NotNull String text) {
         List<String> pages = new ArrayList<>();
-
         if (text.isEmpty()) {
             return pages;
         }
@@ -152,6 +192,12 @@ public final class BookUtils {
         return pages;
     }
 
+    /**
+     * Splits a large paragraph into multiple pages.
+     *
+     * @param paragraph the paragraph to split
+     * @return a list of pages
+     */
     @NotNull
     private static List<String> splitLargeParagraph(@NotNull String paragraph) {
         List<String> pages = new ArrayList<>();
@@ -193,6 +239,12 @@ public final class BookUtils {
         return pages;
     }
 
+    /**
+     * Estimates the number of lines required for the given text.
+     *
+     * @param text the text to estimate
+     * @return the estimated number of lines
+     */
     public static int estimateLines(@NotNull String text) {
         if (text.isEmpty()) {
             return 0;
@@ -208,10 +260,22 @@ public final class BookUtils {
         return totalLines;
     }
 
+    /**
+     * Checks if the given text fits on a single page.
+     *
+     * @param text the text to check
+     * @return true if the text fits on one page, false otherwise
+     */
     public static boolean fitsInOnePage(@NotNull String text) {
         return text.length() <= MAX_CHARACTERS_PER_PAGE && estimateLines(text) <= MAX_LINES_PER_PAGE;
     }
 
+    /**
+     * Creates a centered page header with the specified title.
+     *
+     * @param title the title for the header
+     * @return the formatted header string
+     */
     @NotNull
     public static String createPageHeader(@NotNull String title) {
         if (title.isEmpty()) {
@@ -219,13 +283,18 @@ public final class BookUtils {
         }
 
         int padding = Math.max(0, (MAX_LINE_LENGTH - title.length()) / 2);
-
         return " ".repeat(padding) +
                 title + "\n" +
                 "-".repeat(Math.max(0, Math.min(MAX_LINE_LENGTH, title.length() + padding * 2))) +
                 "\n";
     }
 
+    /**
+     * Centers the given text within the maximum line length.
+     *
+     * @param text the text to center
+     * @return the centered text
+     */
     @NotNull
     public static String centerText(@NotNull String text) {
         if (text.isEmpty()) {
@@ -237,8 +306,6 @@ public final class BookUtils {
         }
 
         int padding = (MAX_LINE_LENGTH - text.length()) / 2;
-
-        return " ".repeat(padding) +
-                text;
+        return " ".repeat(padding) + text;
     }
 }

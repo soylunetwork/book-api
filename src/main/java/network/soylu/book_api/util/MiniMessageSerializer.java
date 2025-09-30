@@ -15,17 +15,36 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Utility class for serializing and deserializing text using MiniMessage format.
+ *
+ * @author sheduxdev
+ * @since 1.0.0
+ */
 @SuppressWarnings("unused")
 public final class MiniMessageSerializer {
 
+    /** Pattern to match legacy Minecraft color codes. */
     private static final Pattern LEGACY_COLOR_PATTERN = Pattern.compile("(?i)§([0-9A-FK-OR])");
+
+    /** Pattern to match legacy Minecraft hex color codes. */
     private static final Pattern HEX_PATTERN = Pattern.compile("(?i)§x§([0-9A-F])§([0-9A-F])§([0-9A-F])§([0-9A-F])§([0-9A-F])§([0-9A-F])");
 
+    /** MiniMessage instance for parsing and serializing MiniMessage text. */
     private final MiniMessage miniMessage;
+
+    /** Gson serializer for JSON components. */
     private final GsonComponentSerializer gsonSerializer;
+
+    /** Legacy serializer for legacy Minecraft text. */
     private final LegacyComponentSerializer legacySerializer;
+
+    /** JsonParser instance for parsing JSON strings. */
     private final JsonParser jsonParser;
 
+    /**
+     * Constructs a new MiniMessageSerializer instance.
+     */
     public MiniMessageSerializer() {
         this.miniMessage = MiniMessage.miniMessage();
         this.gsonSerializer = GsonComponentSerializer.gson();
@@ -34,6 +53,12 @@ public final class MiniMessageSerializer {
         this.jsonParser = new JsonParser();
     }
 
+    /**
+     * Converts MiniMessage text to JSON format.
+     *
+     * @param miniMessageText the MiniMessage text to convert
+     * @return the JSON representation
+     */
     @NotNull
     public String miniMessageToJson(@NotNull String miniMessageText) {
         if (miniMessageText.isEmpty()) {
@@ -48,6 +73,12 @@ public final class MiniMessageSerializer {
         }
     }
 
+    /**
+     * Converts JSON text to MiniMessage format.
+     *
+     * @param jsonComponent the JSON component to convert
+     * @return the MiniMessage representation
+     */
     @NotNull
     public String jsonToMiniMessage(@NotNull String jsonComponent) {
         if (jsonComponent.isEmpty()) {
@@ -62,6 +93,12 @@ public final class MiniMessageSerializer {
         }
     }
 
+    /**
+     * Converts legacy Minecraft text to MiniMessage format.
+     *
+     * @param legacyText the legacy text to convert
+     * @return the MiniMessage representation
+     */
     @NotNull
     public String legacyToMiniMessage(@NotNull String legacyText) {
         if (legacyText.isEmpty()) {
@@ -76,6 +113,12 @@ public final class MiniMessageSerializer {
         }
     }
 
+    /**
+     * Converts MiniMessage text to legacy Minecraft text.
+     *
+     * @param miniMessageText the MiniMessage text to convert
+     * @return the legacy Minecraft text
+     */
     @NotNull
     public String miniMessageToLegacy(@NotNull String miniMessageText) {
         if (miniMessageText.isEmpty()) {
@@ -90,6 +133,12 @@ public final class MiniMessageSerializer {
         }
     }
 
+    /**
+     * Strips MiniMessage tags from text, returning plain text.
+     *
+     * @param miniMessageText the MiniMessage text to strip
+     * @return the plain text
+     */
     @NotNull
     public String stripMiniMessageTags(@NotNull String miniMessageText) {
         if (miniMessageText.isEmpty()) {
@@ -104,49 +153,102 @@ public final class MiniMessageSerializer {
         }
     }
 
+    /**
+     * Creates clickable command text in MiniMessage format.
+     *
+     * @param text the display text
+     * @param command the command to execute
+     * @return the MiniMessage formatted clickable text
+     */
     @NotNull
     public String createClickableCommand(@NotNull String text, @NotNull String command) {
         return "<click:run_command:/" + command + ">" + text + "</click>";
     }
 
+    /**
+     * Creates suggest command text in MiniMessage format.
+     *
+     * @param text the display text
+     * @param command the command to suggest
+     * @return the MiniMessage formatted suggest text
+     */
     @NotNull
     public String createSuggestCommand(@NotNull String text, @NotNull String command) {
         return "<click:suggest_command:/" + command + ">" + text + "</click>";
     }
 
+    /**
+     * Creates clickable URL text in MiniMessage format.
+     *
+     * @param text the display text
+     * @param url the URL to open
+     * @return the MiniMessage formatted clickable URL text
+     */
     @NotNull
     public String createClickableUrl(@NotNull String text, @NotNull String url) {
         return "<click:open_url:" + url + ">" + text + "</click>";
     }
 
+    /**
+     * Creates hover text in MiniMessage format.
+     *
+     * @param text the display text
+     * @param hoverText the hover text to display
+     * @return the MiniMessage formatted hover text
+     */
     @NotNull
     public String createHoverText(@NotNull String text, @NotNull String hoverText) {
         return "<hover:show_text:'" + hoverText + "'>" + text + "</hover>";
     }
 
+    /**
+     * Creates interactive text with click and hover actions in MiniMessage format.
+     *
+     * @param text the display text
+     * @param clickAction the click action type
+     * @param clickValue the click action value
+     * @param hoverText the hover text to display
+     * @return the MiniMessage formatted interactive text
+     */
     @NotNull
     public String createInteractiveText(@NotNull String text, @NotNull String clickAction,
                                         @NotNull String clickValue, @NotNull String hoverText) {
-
         return "<hover:show_text:'" + hoverText + "'>" +
-
                 "<click:" + clickAction + ":" + clickValue + ">" +
-
                 text +
-
                 "</click></hover>";
     }
 
+    /**
+     * Creates gradient text in MiniMessage format.
+     *
+     * @param text the text to apply the gradient to
+     * @param startColor the starting color (hex or name)
+     * @param endColor the ending color (hex or name)
+     * @return the MiniMessage formatted gradient text
+     */
     @NotNull
     public String createGradientText(@NotNull String text, @NotNull String startColor, @NotNull String endColor) {
         return "<gradient:" + startColor + ":" + endColor + ">" + text + "</gradient>";
     }
 
+    /**
+     * Creates rainbow text in MiniMessage format.
+     *
+     * @param text the text to apply rainbow effect to
+     * @return the MiniMessage formatted rainbow text
+     */
     @NotNull
     public String createRainbowText(@NotNull String text) {
         return "<rainbow>" + text + "</rainbow>";
     }
 
+    /**
+     * Validates if the provided text is valid MiniMessage format.
+     *
+     * @param miniMessageText the MiniMessage text to validate
+     * @return true if valid, false otherwise
+     */
     public boolean isValidMiniMessage(@NotNull String miniMessageText) {
         try {
             miniMessage.deserialize(miniMessageText);
@@ -156,28 +258,42 @@ public final class MiniMessageSerializer {
         }
     }
 
+    /**
+     * Converts a list of MiniMessage pages to JSON format.
+     *
+     * @param miniMessagePages the list of MiniMessage pages
+     * @return a list of JSON pages
+     */
     @NotNull
     public List<String> miniMessagePagesToJson(@NotNull List<String> miniMessagePages) {
         List<String> jsonPages = new ArrayList<>();
-
         for (String page : miniMessagePages) {
             jsonPages.add(miniMessageToJson(page));
         }
-
         return jsonPages;
     }
 
+    /**
+     * Converts a list of JSON pages to MiniMessage format.
+     *
+     * @param jsonPages the list of JSON pages
+     * @return a list of MiniMessage pages
+     */
     @NotNull
     public List<String> jsonPagesToMiniMessage(@NotNull List<String> jsonPages) {
         List<String> miniMessagePages = new ArrayList<>();
-
         for (String page : jsonPages) {
             miniMessagePages.add(jsonToMiniMessage(page));
         }
-
         return miniMessagePages;
     }
 
+    /**
+     * Escapes special characters in text for JSON compatibility.
+     *
+     * @param text the text to escape
+     * @return the escaped text
+     */
     private String escapeJson(@NotNull String text) {
         return text.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
@@ -186,6 +302,12 @@ public final class MiniMessageSerializer {
                 .replace("\t", "\\t");
     }
 
+    /**
+     * Extracts plain text from a JSON component.
+     *
+     * @param json the JSON component
+     * @return the plain text
+     */
     private String extractPlainTextFromJson(@NotNull String json) {
         try {
             JsonElement element = jsonParser.parse(json);
@@ -197,6 +319,12 @@ public final class MiniMessageSerializer {
         return json;
     }
 
+    /**
+     * Manually converts legacy Minecraft text to MiniMessage format.
+     *
+     * @param legacyText the legacy text to convert
+     * @return the MiniMessage representation
+     */
     private String convertLegacyToMiniMessageManually(@NotNull String legacyText) {
         String result = legacyText;
 

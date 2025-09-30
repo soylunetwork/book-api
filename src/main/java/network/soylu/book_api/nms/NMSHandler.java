@@ -1,5 +1,6 @@
 package network.soylu.book_api.nms;
 
+import network.soylu.book_api.BookApiException;
 import network.soylu.book_api.book.Book;
 import network.soylu.book_api.util.ReflectionUtil;
 import org.bukkit.Bukkit;
@@ -13,44 +14,74 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+/**
+ * Abstract base class for handling NMS (Net Minecraft Server) operations to open books for players.
+ * Provides version-specific implementations for different Minecraft server versions.
+ *
+ * @author sheduxdev
+ * @since 1.0.0
+ */
 public abstract class NMSHandler {
 
+    /** Logger instance for logging NMS-related messages. */
     protected static final Logger LOGGER = Logger.getLogger(NMSHandler.class.getName());
 
+    /** The Minecraft server version this handler supports. */
     protected final String version;
 
+    /**
+     * Constructs an NMSHandler with the specified server version.
+     *
+     * @param version the Minecraft server version
+     * @throws IllegalArgumentException if version is null
+     */
     protected NMSHandler(@NotNull String version) {
         this.version = version;
     }
 
+    /**
+     * Creates an appropriate NMSHandler instance based on the server version.
+     *
+     * @return a new NMSHandler instance
+     * @throws Exception if the server version is unsupported or initialization fails
+     */
     @NotNull
-    public static NMSHandler create() {
+    public static NMSHandler create() throws Exception {
         String version = ReflectionUtil.getServerVersion();
-        LOGGER.info("Detected server version: " + version);
 
-        try {
-            if (ReflectionUtil.isVersionAtLeast(1, 21, 4)) {
-                return new ModernNMSHandler(version);
-            }
-            else if (ReflectionUtil.isVersionAtLeast(1, 20, 0)) {
-                return new LegacyNMSHandler(version);
-            }
-            else {
-                throw new UnsupportedOperationException("Unsupported Minecraft version: " + version);
-            }
-        } catch (Exception e) {
-            LOGGER.severe("Failed to create NMS handler for version " + version + ": " + e.getMessage());
-            throw new RuntimeException("Failed to create NMS handler", e);
+        if (ReflectionUtil.isVersionAtLeast(1, 21, 4)) {
+            return new ModernNMSHandler(version);
+        } else if (ReflectionUtil.isVersionAtLeast(1, 20, 0)) {
+            return new LegacyNMSHandler(version);
+        } else if (ReflectionUtil.isVersionAtLeast(1, 8, 0)) {
+            return new LegacyNMSHandler(version); // 1.8-1.19 support
+        } else {
+            throw new BookApiException("Unsupported Minecraft version: " + version);
         }
     }
 
+    /**
+     * Opens a book for the specified player.
+     *
+     * @param player the player to open the book for
+     * @param book the book to open
+     * @throws Exception if the operation fails
+     */
     public abstract void openBook(@NotNull Player player, @NotNull Book book) throws Exception;
 
+    /**
+     * Gets the Minecraft server version this handler supports.
+     *
+     * @return the server version
+     */
     @NotNull
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Handler for modern Minecraft versions (1.21.4 and above).
+     */
     private static class ModernNMSHandler extends NMSHandler {
 
         private final Method sendPacketMethod;
@@ -58,6 +89,12 @@ public abstract class NMSHandler {
         private final Method getHandleMethod;
         private final Field connectionField;
 
+        /**
+         * Constructs a ModernNMSHandler for modern Minecraft versions.
+         *
+         * @param version the Minecraft server version
+         * @throws Exception if reflection-based initialization fails
+         */
         public ModernNMSHandler(@NotNull String version) throws Exception {
             super(version);
 
@@ -74,6 +111,14 @@ public abstract class NMSHandler {
             this.openBookPacketConstructor = ReflectionUtil.getConstructor(openBookPacketClass, enumHandClass);
         }
 
+        /**
+         * Opens a book for the specified player by temporarily setting the book in their main hand
+         * and sending an open book packet.
+         *
+         * @param player the player to open the book for
+         * @param book the book to open
+         * @throws Exception if the operation fails
+         */
         @Override
         public void openBook(@NotNull Player player, @NotNull Book book) throws Exception {
             PlayerInventory inventory = player.getInventory();
@@ -105,6 +150,13 @@ public abstract class NMSHandler {
             }
         }
 
+        /**
+         * Sends a packet to the specified player.
+         *
+         * @param player the player to send the packet to
+         * @param packet the packet to send
+         * @throws Exception if the packet sending fails
+         */
         private void sendPacket(@NotNull Player player, @NotNull Object packet) throws Exception {
             Object entityPlayer = getHandleMethod.invoke(player);
             Object connection = connectionField.get(entityPlayer);
@@ -112,6 +164,9 @@ public abstract class NMSHandler {
         }
     }
 
+    /**
+     * Handler for legacy Minecraft versions (1.8 to 1.20).
+     */
     private static class LegacyNMSHandler extends NMSHandler {
 
         private final Method sendPacketMethod;
@@ -119,10 +174,15 @@ public abstract class NMSHandler {
         private final Method getHandleMethod;
         private final Field connectionField;
 
+        /**
+         * Constructs a LegacyNMSHandler for legacy Minecraft versions.
+         *
+         * @param version the Minecraft server version
+         * @throws Exception if reflection-based initialization fails
+         */
         public LegacyNMSHandler(@NotNull String version) throws Exception {
             super(version);
 
-            @SuppressWarnings("unused")
             String versionString = ReflectionUtil.getServerVersion();
 
             Class<?> craftPlayerClass = ReflectionUtil.getCraftBukkitClass("entity.CraftPlayer");
@@ -138,6 +198,14 @@ public abstract class NMSHandler {
             this.openBookPacketConstructor = ReflectionUtil.getConstructor(openBookPacketClass, enumHandClass);
         }
 
+        /**
+         * Opens a book for the specified player by temporarily setting the book in their main hand
+         * and sending an open book packet.
+         *
+         * @param player the player to open the book for
+         * @param book the book to open
+         * @throws Exception if the operation fails
+         */
         @Override
         public void openBook(@NotNull Player player, @NotNull Book book) throws Exception {
             PlayerInventory inventory = player.getInventory();
@@ -169,6 +237,13 @@ public abstract class NMSHandler {
             }
         }
 
+        /**
+         * Sends a packet to the specified player.
+         *
+         * @param player the player to send the packet to
+         * @param packet the packet to send
+         * @throws Exception if the packet sending fails
+         */
         private void sendPacket(@NotNull Player player, @NotNull Object packet) throws Exception {
             Object entityPlayer = getHandleMethod.invoke(player);
             Object connection = connectionField.get(entityPlayer);

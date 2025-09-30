@@ -12,20 +12,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Utility class for serializing and deserializing text components between legacy Minecraft
+ * formatting and JSON formats.
+ *
+ * @author sheduxdev
+ * @since 1.0.0
+ */
 @SuppressWarnings("unused")
 public final class ComponentSerializer {
 
+    /** Pattern to match legacy Minecraft color codes. */
     private static final Pattern COLOR_PATTERN = Pattern.compile("(?i)§([0-9A-FK-OR])");
+
+    /** Pattern to match legacy Minecraft hex color codes. */
     private static final Pattern HEX_PATTERN = Pattern.compile("(?i)§x§([0-9A-F])§([0-9A-F])§([0-9A-F])§([0-9A-F])§([0-9A-F])§([0-9A-F])");
 
+    /** Gson instance for JSON serialization. */
     private final Gson gson;
+
+    /** JsonParser instance for parsing JSON strings. */
     private final JsonParser jsonParser;
 
+    /**
+     * Constructs a new ComponentSerializer instance.
+     */
     public ComponentSerializer() {
         this.gson = new GsonBuilder().create();
         this.jsonParser = new JsonParser();
     }
 
+    /**
+     * Converts legacy Minecraft text with color codes to JSON format.
+     *
+     * @param text the legacy text to convert
+     * @return the JSON representation of the text
+     */
     @NotNull
     public String legacyToJson(@NotNull String text) {
         if (text.isEmpty()) {
@@ -54,6 +76,12 @@ public final class ComponentSerializer {
         return gson.toJson(root);
     }
 
+    /**
+     * Converts JSON text to legacy Minecraft text with color codes.
+     *
+     * @param json the JSON text to convert
+     * @return the legacy Minecraft text
+     */
     @NotNull
     public String jsonToLegacy(@NotNull String json) {
         if (json.isEmpty()) {
@@ -68,15 +96,25 @@ public final class ComponentSerializer {
         }
     }
 
+    /**
+     * Strips color codes from legacy Minecraft text.
+     *
+     * @param text the text to strip colors from
+     * @return the text without color codes
+     */
     @NotNull
     public String stripColors(@NotNull String text) {
-
         text = COLOR_PATTERN.matcher(text).replaceAll("");
         text = HEX_PATTERN.matcher(text).replaceAll("");
-
         return text;
     }
 
+    /**
+     * Converts plain text to JSON format.
+     *
+     * @param text the plain text to convert
+     * @return the JSON representation of the text
+     */
     @NotNull
     public String plainToJson(@NotNull String text) {
         JsonObject component = new JsonObject();
@@ -84,11 +122,23 @@ public final class ComponentSerializer {
         return gson.toJson(component);
     }
 
+    /**
+     * Converts JSON text to plain text, stripping formatting.
+     *
+     * @param json the JSON text to convert
+     * @return the plain text
+     */
     @NotNull
     public String jsonToPlain(@NotNull String json) {
         return stripColors(jsonToLegacy(json));
     }
 
+    /**
+     * Validates if the provided string is valid JSON.
+     *
+     * @param json the JSON string to validate
+     * @return true if the JSON is valid, false otherwise
+     */
     public boolean isValidJson(@NotNull String json) {
         try {
             jsonParser.parse(json);
@@ -98,9 +148,14 @@ public final class ComponentSerializer {
         }
     }
 
+    /**
+     * Parses legacy Minecraft text into a list of TextComponent objects.
+     *
+     * @param text the legacy text to parse
+     * @return a list of TextComponent objects
+     */
     private List<TextComponent> parseLegacyText(@NotNull String text) {
         List<TextComponent> components = new ArrayList<>();
-
         if (text.isEmpty()) {
             return components;
         }
@@ -145,6 +200,13 @@ public final class ComponentSerializer {
         return components;
     }
 
+    /**
+     * Extracts a hex color code from legacy text starting at the specified index.
+     *
+     * @param text the legacy text
+     * @param startIndex the starting index of the hex color code
+     * @return the hex color code, or null if invalid
+     */
     private String extractHexColor(@NotNull String text, int startIndex) {
         if (startIndex + 13 >= text.length()) {
             return null;
@@ -170,10 +232,22 @@ public final class ComponentSerializer {
         return hex.toString();
     }
 
+    /**
+     * Checks if a character is a valid hexadecimal digit.
+     *
+     * @param c the character to check
+     * @return true if the character is a valid hex digit, false otherwise
+     */
     private boolean isHexChar(char c) {
         return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
     }
 
+    /**
+     * Applies a legacy color or formatting code to a TextComponent.
+     *
+     * @param component the TextComponent to apply the code to
+     * @param code the legacy color or formatting code
+     */
     private void applyColorCode(@NotNull TextComponent component, char code) {
         switch (Character.toLowerCase(code)) {
             case '0': component.color = "black"; break;
@@ -203,6 +277,12 @@ public final class ComponentSerializer {
         }
     }
 
+    /**
+     * Parses a JSON component into legacy Minecraft text.
+     *
+     * @param element the JSON element to parse
+     * @return the legacy text
+     */
     private String parseJsonComponent(@NotNull JsonElement element) {
         if (element.isJsonPrimitive()) {
             return element.getAsString();
@@ -229,6 +309,9 @@ public final class ComponentSerializer {
         return result.toString();
     }
 
+    /**
+     * Inner class representing a text component with formatting properties.
+     */
     private static class TextComponent {
         String text = "";
         String color = null;
@@ -238,6 +321,9 @@ public final class ComponentSerializer {
         boolean strikethrough = false;
         boolean obfuscated = false;
 
+        /**
+         * Resets all formatting properties of the component.
+         */
         void reset() {
             color = null;
             bold = false;
@@ -247,6 +333,11 @@ public final class ComponentSerializer {
             obfuscated = false;
         }
 
+        /**
+         * Creates a copy of this TextComponent.
+         *
+         * @return a new TextComponent with the same properties
+         */
         TextComponent copy() {
             TextComponent copy = new TextComponent();
             copy.color = this.color;
@@ -258,6 +349,11 @@ public final class ComponentSerializer {
             return copy;
         }
 
+        /**
+         * Converts this TextComponent to a JSON object.
+         *
+         * @return the JSON representation of this component
+         */
         JsonObject toJson() {
             JsonObject json = new JsonObject();
             json.addProperty("text", text);
